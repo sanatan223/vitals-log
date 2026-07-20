@@ -1,13 +1,15 @@
 {
-  "name": "server",
+  "name": "@vitals-log/server",
   "version": "1.0.0",
   "description": "the backend of the vitals-log website",
   "license": "ISC",
   "author": "Sanatan Sethi",
   "type": "module",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon lib/script.ts",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
@@ -16,6 +18,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@vitals-log/shared": "*",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "dotenv": "^17.4.2",

@@ -8,8 +8,6 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [focused, setFocused] = useState<string | null>(null);
 
   return (
     <div
@@ -59,8 +57,6 @@ const LoginPage = () => {
                   type="email"
                   value={staffEmail}
                   onChange={(e) => setStaffEmail(e.target.value)}
-                  onFocus={() => setFocused("email")}
-                  onBlur={() => setFocused(null)}
                   placeholder="staff@vitalslog.com"
                 />
               </div>
@@ -73,8 +69,6 @@ const LoginPage = () => {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocused("pw")}
-                    onBlur={() => setFocused(null)}
                     placeholder="Enter your password"
                   />
                 </div>

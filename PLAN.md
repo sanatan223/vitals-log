@@ -34,7 +34,7 @@ graph TD
     Modal --> Submit[Submit Form]
     
     %% Validation & Optimistic UI
-    Submit --> Zod{Shared Zod Validation}
+    Submit --> Zod{Shared Zod Validation Package}
     Zod -->|Invalid| InlineErr[Show Inline Field Errors]
     Zod -->|Valid| OptUI[Trigger Optimistic UI Update]
     
@@ -45,34 +45,21 @@ graph TD
 
 ## 2. Explicit Assumptions
 
--  Tech Stack: React (Frontend), Node.js/Express (Backend API), PostgreSQL (Database), Prisma(ORM) and strict TypeScript across the entire monorepo/codebase.
+-  Tech Stack: React built with Vite (Frontend), Node.js/Express (Backend API), PostgreSQL (Database), Prisma (ORM), and strict TypeScript across the codebase.
 
--  Authentication: Session-based or JWT authentication using httponly cookies. Roles (admin, member , viewer )are enforced server-side via Express middleware.
+- Monorepo Architecture: The project utilizes npm workspaces with a root package.json to manage dependencies, run concurrent dev scripts, and share code between the client and server.
+
+-  Authentication: Session-based or JWT authentication using httpOnly cookies. Roles (admin, member, viewer) are enforced server-side via Express middleware.
 
 -  Data Volume: A patient will generate hundreds of vital logs over a stay. We will use cursor-based pagination for fetching historical logs to maintain performance.
 
--  Timezones: All timestamps ( recordedAt , createdAt ) are stored in UTC in the database and localized on the client side using the browser's timezone.
-
-## 3. User Stories
-
--  As a Clinic Admin (Doctor), I want to create and manage patient profiles so that I can assign them to nursing staff.
-
-
--  As a Clinic Admin (Doctor), I want to configure specific minimum and maximum threshold rules for vitals (e.g., HR > 120) per patient, so that the system knows when to trigger an alert.
-
--  As a Nurse, I want to view a list of my assigned patients, sorted by active alerts, so I know who needs immediate attention.
-
--  As a Nurse, I want to log new vitals for a patient through a fast, keyboard-navigable form so I can return to patient care quickly.
-
--  As a Nurse, I want to see a historical chart of a patient's vitals so I can track trends over their stay.
-
--  As a Nurse, I want to acknowledge an active alert so the system logs that a clinician has reviewed the critical reading.
+-  Timezones: All timestamps (recordedAt, createdAt) are stored in UTC in the database and localized on the client side using the browser's timezone.
 
 ## 4. Acceptance Criteria
 
--  UI/UX: Every asynchronous action (fetching patients, submitting vitals) must explicitly handle loading (skeletons), empty , error (with actionable retry), and success states.
+-  UI/UX: Every asynchronous action (fetching patients, submitting vitals) must explicitly handle loading (skeletons), empty, error (with actionable retry), and success states.
 
--  Validation: Both the React frontend forms and the Express API endpoints must validate payloads using the exact same Zod schema.
+-  Validation: Both the React frontend forms and the Express API endpoints must validate payloads using the exact same Zod schema imported from the shared workspace package.
 
 -  Optimistic UI: Submitting a vitals log must instantly update the local React state. If the Express API returns an error, the UI must roll back the optimistic update and display an error toast.
 
@@ -157,33 +144,48 @@ graph TD
 
 ## 6. Affected Files (Architecture Map)
 
-##  Database/ORM:
+### Root Directory:
 
-- prisma/schema.prisma : Define the tables and relationships.
+- package.json: Configures npm workspaces ("workspaces": ["client", "server", "shared"]) and concurrent dev scripts.
 
-- src/shared/validators/vitals.schema. ts : Zod schemas for shared full-stack validation.
+- eslint.config.js / tsconfig.json: Base configurations inherited by workspaces.
 
-## Backend (Express):
+### Shared Workspace (/shared):
 
--  src/server/middlewares/auth.ts : JWT/Session validation and RBAC checks.
+- shared/package.json: Defines the @vitals-log/shared package.
 
-- src/server/routes/vitals.routes.ts : API endpoints (GET, POST).
+-  shared/src/validators/vitals.schema.ts: Zod schemas for shared full-stack validation.
 
--  src/server/controllers/vitals.controller.ts : Business logic (checking thresholds against incoming logs).
+- shared/src/types/index.ts: Shared TypeScript interfaces.
 
-##  Frontend (React):
+### Database/ORM (Inside /server):
 
-- src/client/pages/Dashboard.tsx : Patient list and active alerts.
+- server/prisma/schema.prisma: Define the tables and relationships.
 
--  src/client/pages/PatientDetail. tsx : Historical charts and logs.
+-  server/generated/: Output directory for the generated Prisma Client.
 
--  src/client/components/VitalsFormModal.tsx : The data entry UI
+### Backend Workspace (/server):
 
--  src/client/hooks/usevitals. ts : TanStack Query (React Query) hooks for fetching, optimistic mutations, and caching.
+- server/lib/middlewares/auth.ts: JWT/Session validation and RBAC checks.
 
-## 7. Edge Cases
+-  server/lib/routes/vitals.routes.ts: API endpoints (GET, POST).
 
--  Concurrent Logging: Nurse A and Nurse B submit a vital log for the same patient at the exact same time. (Resolution: Rely on the database recordedat timestamp for chronological sorting, not the insertion order).
+- server/lib/controllers/vitals.controller.ts: Business logic (checking thresholds against incoming logs), utilizing @vitals-log/shared for validation.
+
+- server/script.ts: Entry point or database seeder.
+
+### Frontend Workspace (/client):
+
+- client/src/pages/Dashboard.tsx: Patient list and active alerts.
+
+-  client/src/pages/PatientDetail.tsx: Historical charts and logs.
+
+- client/src/components/VitalsFormModal.tsx: The data entry UI, utilizing @vitals-log/shared for form validation.
+- client/src/lib/useVitals.ts: TanStack Query (React Query) hooks for fetching, optimistic mutations, and caching.### 
+
+## 7. Edge Case- 
+
+-  Concurrent Logging: Nurse A and Nurse B submit a vital l-g for the same patient at the exact same time. (Resolution: Rely on the database recordedat timestamp for chronological sorting, not the insertion order).
 
 -  Network Failure During Submission: The nurse submits the form, but the Wi-Fi drops before the server responds. (Resolution: React Query mutation fails, optimistic UI rolls back, and the nurse is prompted to retry).
 

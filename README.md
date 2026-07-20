@@ -9,7 +9,6 @@
 ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-
 🚀 **Live Demo:** https://vitals-log.vercel.app
 
 ---
@@ -84,44 +83,41 @@ The platform is designed around real-world clinical workflows, emphasizing speed
 
 ## 🏗 Tech Stack
 
-### Frontend
+### Architecture
+- **npm Workspaces (Monorepo):** Unified repository managing `@vitals-log/client`, `@vitals-log/server`, and `@vitals-log/shared` packages.
 
-- React
+### Frontend (`/client`)
+- React + Vite
 - TypeScript (Strict Mode)
 - Tailwind CSS
 - TanStack Query
 
-### Backend
-
+### Backend (`/server`)
 - Express.js
 - Auth.js
 - Zod Validation
 - RBAC Middleware
 
 ### Database
-
 - PostgreSQL
 - Prisma ORM
 
 ### DevOps
-
 - Vercel
 - GitHub Actions
-- ESLint
-- Prettier
-- Vitest
-- Playwright
+- ESLint & Prettier
+- Vitest & Playwright
 
 ---
 
-
 ## ⚡ Quick Start
+
+This project uses npm workspaces. A single command installs the dependencies for the frontend, backend, and shared packages simultaneously.
 
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/vitalslog.git
-
+git clone [https://github.com/yourusername/vitalslog.git](https://github.com/yourusername/vitalslog.git)
 cd vitalslog
 ```
 
@@ -134,19 +130,19 @@ npm install
 ### 3. Configure Environment Variables
 
 ```bash
-cp .env.example .env
+cp server/.env.example server/.env
 ```
 
 ### 4. Run Database Migrations
 
 ```bash
-npx prisma migrate dev
+npm run db:migrate -w server
 ```
 
 ### 5. Seed Database
 
 ```bash
-npm run db:seed
+npm run db:seed -w server
 ```
 
 ### 6. Start Development Server
@@ -177,16 +173,16 @@ http://localhost:3000
 
 ---
 
-## Scripts Reference
+## 📜 Scripts Reference (Root package.json)
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Starts the full-stack development environment concurrently. |
-| `npm run dev:client` | Starts the Vite frontend development server only. |
-| `npm run dev:server` | Starts the Express backend development server using `tsx`. |
-| `npm run build:client` | Builds the React/Vite frontend into the `/dist` directory. |
-| `npm run build:server` | Compiles the Express TypeScript backend into JavaScript for production. |
-| `npm run vercel-build` | Runs the production Vite build used during Vercel deployment. |
+| `npm run build` | Builds the shared, server, and client workspaces in the correct order for production. |
+| `npm run dev -w server` | Starts the Express backend development server. |
+| `npm run build -w client` | Starts the Vite frontend development server only. |
+| `npm run test` | Runs unit tests across all workspaces. |
+| `npm run lint` | Lints the entire monorepo. |
 
 ---
 
