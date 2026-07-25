@@ -1,7 +1,7 @@
 import { type Request, type Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { prisma } from "../prisma";
+import { prisma } from "../../prisma/prisma";
 import { loginSchema } from "@vitals-log/shared/validators/auth.schema";
 
 
@@ -15,6 +15,8 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    console.log(parsed);
+
     const { email, password } = parsed.data;
 
     const user = await prisma.user.findUnique({
@@ -22,7 +24,7 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password." });
+      return res.status(401).json({ message: "User not found, Please contact the cell !" });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);

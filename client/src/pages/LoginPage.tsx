@@ -1,13 +1,50 @@
 import { useState } from "react";
 import { Input } from "../components/Input.tsx";
 import { Button } from "../components/Button.tsx";
+import { loginUser } from "../lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { loginSchema } from "@vitals-log/shared/validators/auth.schema";
+
 
 const LoginPage = () => {
-  const [staffEmail, setStaffEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string[] }>({});
+
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      if (data.user.role === "ADMIN") {
+        window.location.href = "/doctor-dashboard";
+      } else {
+        window.location.href = "/nurse-dashboard";
+      }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setValidationErrors({});
+
+      console.log("Attempting to login with:", { email, password });
+
+      const parsed = loginSchema.safeParse({ email, password });
+      console.log("Parsed result:", parsed);
+
+      if (!parsed.success) {
+        setValidationErrors(parsed.error.flatten().fieldErrors);
+        return;
+      }
+
+      loginMutation.mutate(parsed.data);
+    } catch (error) {
+      console.error("Unexpected error during login:");
+    }
+  };
 
   return (
     <div
@@ -33,7 +70,7 @@ const LoginPage = () => {
             </p>
 
             {/* Form */}
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
 
               {/* Error */}
               {/* {error && (
@@ -55,10 +92,13 @@ const LoginPage = () => {
                 <Input
                   label="Staff Email"
                   type="email"
-                  value={staffEmail}
-                  onChange={(e) => setStaffEmail(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="staff@vitalslog.com"
                 />
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.email[0]}</p>
+                )}
               </div>
 
               {/* Password */}
@@ -71,6 +111,9 @@ const LoginPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                   />
+                  {validationErrors.password && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.password[0]}</p>
+                  )}
                 </div>
               </div>
 
@@ -104,7 +147,7 @@ const LoginPage = () => {
                 </span>
               </div>
 
-              <Button type="submit" isLoading={isLoading}>
+              <Button type="submit" isLoading={loginMutation.isPending}>
                 Sign In
               </Button>
             </form>

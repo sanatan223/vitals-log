@@ -8,8 +8,10 @@
   "main": "dist/index.js",
   "private": true,
   "scripts": {
-    "dev": "nodemon lib/script.ts",
-    "build": "tsc"
+    "dev": "tsx watch lib/index.ts",
+    "build": "tsc",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
