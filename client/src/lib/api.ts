@@ -1,8 +1,10 @@
 import { type LoginInput } from "@vitals-log/shared/validators/auth.schema";
 
+const baseUrl = import.meta.env.VITE_ENV === "development" ? "" : import.meta.env.VITE_API_URL; // Default to localhost if not set
+
 export const loginUser = async (credentials: LoginInput) => {
   try {
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

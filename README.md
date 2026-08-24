@@ -9,11 +9,11 @@
 ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-🚀 **Live Demo:** https://vitals-log.vercel.app
+ **Live Demo:** https://vitals-log.vercel.app
 
 ---
 
-## 📖 Overview
+##  Overview
 
 VitalsLog is a healthcare-focused monitoring system built for clinics and hospitals. It provides role-based dashboards for doctors and nurses, allowing medical staff to:
 
@@ -28,7 +28,7 @@ The platform is designed around real-world clinical workflows, emphasizing speed
 
 ---
 
-## ✨ Features
+##  Features
 
 ### Authentication & Authorization
 - Secure authentication using Auth.js.
@@ -80,238 +80,156 @@ The platform is designed around real-world clinical workflows, emphasizing speed
 - WCAG-compliant interactions.
 
 ---
+## Current Status
 
-## 🏗 Tech Stack
+Implemented:
 
-### Architecture
-- **npm Workspaces (Monorepo):** Unified repository managing `@vitals-log/client`, `@vitals-log/server`, and `@vitals-log/shared` packages.
+- React 19 and Vite client application.
+- Express 5 API server.
+- Login form with shared email and password validation.
+- Password verification with bcrypt.
+- JWT-based authentication for successful logins.
+- Login rate limiting: five attempts per 15 minutes per client.
+- Prisma `User` model with `ADMIN`, `NURSE`, and `VIEWER` roles.
+- Seed data for demo doctor and nurse accounts.
 
-### Frontend (`/client`)
-- React + Vite
-- TypeScript (Strict Mode)
-- Tailwind CSS
-- TanStack Query
+Planned clinical workflows such as patient records, vital-sign logging, thresholds, alerts, dashboards, and audit logs are documented in [PLAN.md](PLAN.md) but are not implemented yet.
 
-### Backend (`/server`)
-- Express.js
-- Auth.js
-- Zod Validation
-- RBAC Middleware
+## Repository Structure
 
-### Database
-- PostgreSQL
-- Prisma ORM
-
-### DevOps
-- Vercel
-- GitHub Actions
-- ESLint & Prettier
-- Vitest & Playwright
-
----
-
-## ⚡ Quick Start
-
-This project uses npm workspaces. A single command installs the dependencies for the frontend, backend, and shared packages simultaneously.
-
-### 1. Clone Repository
-
-```bash
-git clone [https://github.com/yourusername/vitalslog.git](https://github.com/yourusername/vitalslog.git)
-cd vitalslog
+```text
+client/     React + Vite frontend
+server/     Express API, Prisma schema, migrations, and seed script
+shared/     Shared TypeScript types and Zod validators
 ```
 
-### 2. Install Dependencies
+The repository uses npm workspaces. The root package coordinates the client, server, and shared packages.
+
+## Tech Stack
+
+- **Frontend:** React, React Router, TanStack Query, TypeScript, Tailwind CSS
+- **Backend:** Node.js, Express, TypeScript
+- **Validation:** Zod in the shared workspace
+- **Authentication:** JSON Web Tokens and bcrypt
+- **Database:** PostgreSQL with Prisma ORM
+- **Tooling:** Vite, ESLint, TypeScript, `tsx`
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js with npm.
+- A running PostgreSQL database.
+
+### Install
+
+From the repository root:
 
 ```bash
 npm install
 ```
 
-### 3. Configure Environment Variables
+### Configure Environment Variables
+
+Copy the example environment files:
 
 ```bash
-cp server/.env.example server/.env
+cp client.env client/.env
+cp server.env server/.env
 ```
 
-### 4. Run Database Migrations
+Update `server/.env` with a reachable PostgreSQL connection string and a development `AUTH_SECRET`. The supplied client configuration points API requests to `http://localhost:5000` and the server allows the Vite origin at `http://localhost:5173`.
+
+Environment variables:
+
+| File | Variable | Purpose |
+| --- | --- | --- |
+| `client/.env` | `VITE_ENV` | Selects the client API URL behavior. |
+| `client/.env` | `VITE_API_URL` | API base URL used outside development. |
+| `server/.env` | `PORT` | Express port; defaults to `5000`. |
+| `server/.env` | `DATABASE_URL` | PostgreSQL connection string used by Prisma. |
+| `server/.env` | `AUTH_SECRET` | Secret used to sign authentication tokens. |
+| `server/.env` | `CLIENT_URL` | Frontend origin allowed by CORS. |
+
+Do not commit real secrets or production database credentials.
+
+### Create the Database Schema
+
+Run the migration and seed commands from the repository root:
 
 ```bash
 npm run db:migrate -w server
-```
-
-### 5. Seed Database
-
-```bash
 npm run db:seed -w server
 ```
 
-### 6. Start Development Server
+The seed creates these demo users, both with the password `demo1234`:
+
+| Role | Email |
+| --- | --- |
+| Admin | `doctor@demo.com` |
+| Nurse | `nurse@demo.com` |
+
+Use demo credentials only for local development.
+
+### Start Development
+
+Start both applications from the repository root:
 
 ```bash
 npm run dev
 ```
 
-Visit:
+Open the client at [http://localhost:5173](http://localhost:5173). The API is available at [http://localhost:5000](http://localhost:5000).
 
-```text
-http://localhost:3000
+To start one workspace separately:
+
+```bash
+npm run dev -w client
+npm run dev -w server
 ```
 
----
+## API
 
-## 🔐 Environment Variables
+### `POST /api/auth/login`
 
-| Variable | Description |
-|-----------|-------------|
-| DATABASE_URL | PostgreSQL connection string |
-| AUTH_SECRET | Auth.js secret |
-| AUTH_URL | Application URL |
-| GOOGLE_CLIENT_ID | Google OAuth Client ID |
-| GOOGLE_CLIENT_SECRET | Google OAuth Secret |
-| NEXT_PUBLIC_APP_URL | Public application URL |
-| NODE_ENV | Environment mode |
+Accepts a JSON body validated by the shared login schema:
 
----
+```json
+{
+  "email": "doctor@demo.com",
+  "password": "demo1234"
+}
+```
 
-## 📜 Scripts Reference (Root package.json)
+The endpoint is rate limited to five requests per 15-minute window. Invalid credentials return an error response; successful authentication returns the server's login response and token.
+
+## Scripts
+
+Run these commands from the repository root unless noted otherwise:
 
 | Command | Description |
-|---------|-------------|
-| `npm run dev` | Starts the full-stack development environment concurrently. |
-| `npm run build` | Builds the shared, server, and client workspaces in the correct order for production. |
-| `npm run dev -w server` | Starts the Express backend development server. |
-| `npm run build -w client` | Starts the Vite frontend development server only. |
-| `npm run test` | Runs unit tests across all workspaces. |
-| `npm run lint` | Lints the entire monorepo. |
+| --- | --- |
+| `npm run dev` | Starts the client and server concurrently. |
+| `npm run build` | Intended to build the shared, server, and client workspaces in order. |
+| `npm run install:all` | Installs workspace dependencies. |
+| `npm run dev -w client` | Starts the Vite development server. |
+| `npm run dev -w server` | Starts the Express development server with `tsx watch`. |
+| `npm run db:migrate -w server` | Creates or applies a Prisma development migration. |
+| `npm run db:seed -w server` | Seeds the local database. |
 
----
+The current root `build` command is not yet runnable because the shared workspace does not define a `build` script. The repository also does not currently define test, lint, or typecheck scripts at the root.
 
-### Core Flow
+## Roadmap
 
-```text
-Doctor
-   │
-   ├── Create Patients
-   ├── Assign Nurses
-   └── Configure Thresholds
-            │
-            ▼
-        Nurse
-            │
-            ├── View Assigned Patients
-            ├── Record Vitals
-            └── Review Alerts
-                    │
-                    ▼
-           Threshold Evaluation
-                    │
-                    ▼
-                Alert Engine
-                    │
-                    ▼
-            Active / Acknowledged
-```
+The planned product scope is maintained in [PLAN.md](PLAN.md). The next major areas are:
 
+- Protected role-aware dashboards.
+- Patient CRUD and nurse assignments.
+- Vital-sign logging and historical trends.
+- Patient-specific alert thresholds and acknowledgements.
+- Shared validation for clinical data entry.
+- Audit logging and production deployment improvements.
 
----
+## License
 
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-npm run test
-```
-
-### E2E Tests
-
-```bash
-npm run test:e2e
-```
-
-### Type Checking
-
-```bash
-npm run typecheck
-```
-
-### Linting
-
-```bash
-npm run lint
-```
-
----
-
-
-## 🚨 Edge Cases Covered
-
-- Concurrent vital submissions.
-- Network failures during mutations.
-- Threshold changes after historical logs exist.
-- Partial vital readings.
-- Invalid role access attempts.
-- Optimistic UI rollback.
-- Session expiration.
-- Empty patient assignments.
-
----
-
-## 🛣 Roadmap
-
-### Version 1.0
-
-- [ ] Authentication
-- [ ] RBAC
-- [ ] Patient CRUD
-- [ ] Vital Logging
-- [ ] Alert System
-- [ ] Dashboard Analytics
-
-### Version 1.1
-
-- [ ] Real-time alerts via WebSockets
-- [ ] Email notifications
-- [ ] Mobile responsive optimization
-- [ ] Export reports (CSV/PDF)
-
-### Version 1.2
-
-- [ ] Multi-clinic support
-- [ ] Advanced analytics
-- [ ] AI-powered anomaly detection
-- [ ] Predictive risk scoring
-
----
-
-## 👨‍⚕️ Demo Credentials
-
-### Doctor Account
-
-```text
-Email: doctor@demo.com
-Password: demo1234
-```
-
-### Nurse Account
-
-```text
-Email: nurse@demo.com
-Password: demo1234
-```
-
----
-
-## 🙏 Acknowledgements
-
-Built as part of the **Digital Heroes Full Stack Developer Trial**.
-
-Special thanks to the Digital Heroes team for creating a product-focused engineering challenge that emphasizes real-world software development, clean architecture, deployment, documentation, and engineering craftsmanship.
-
----
-
-## 📄 License
-
-MIT License © 2025
-
-See [LICENSE](LICENSE) for details.
+See [LICENSE](LICENSE) for license details.
