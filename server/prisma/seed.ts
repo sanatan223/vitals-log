@@ -25,7 +25,7 @@ async function main() {
     update: {},
     create: {
       email: "nurse@demo.com",
-      name: "Nurse Sweety",
+      name: "Nurse Swagat",
       passwordHash: passwordHash,
       role: "NURSE",
     },

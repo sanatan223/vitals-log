@@ -119,7 +119,7 @@ const LoginPage = () => {
 
               <div style={{ borderTop: "1px solid #e4f2e3" }} />
 
-              {/* Remember device */}
+              {/* '''Remember device'''
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
@@ -145,7 +145,7 @@ const LoginPage = () => {
                 <span className="text-sm" style={{ color: "#4a7848" }}>
                   Keep me signed in for this shift (8 hrs)
                 </span>
-              </div>
+              </div> */}
 
               <Button type="submit" isLoading={loginMutation.isPending}>
                 Sign In
